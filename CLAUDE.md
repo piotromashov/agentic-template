@@ -1,4 +1,4 @@
-# CLAUDE.md — smartcrate
+# CLAUDE.md — PROJECT_NAME
 
 > **Pointer file.** The operating manual lives in [`agents/`](agents/). Read it
 > before doing any work in this repo.

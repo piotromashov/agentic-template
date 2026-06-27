@@ -1,4 +1,4 @@
-# MEMORY.md — smartcrate facts & decisions
+# MEMORY.md — PROJECT_NAME facts & decisions
 
 > Durable *facts and decisions* for this repo: operational/infra facts, a
 > decision log, and project state. The **rules** live in [`AGENTS.md`](AGENTS.md);
@@ -22,11 +22,18 @@
 
 Newest first. One entry per decision: date, what was decided, why.
 
-- **2026-06-26 — Adopted OpenSpec for spec-driven development.** Spec-first
-  workflow (`/opsx:propose` → review → `/opsx:apply` → `/opsx:archive`); specs
-  checked into the repo as the source of truth. Initialized with
-  `openspec init --tools claude,cursor`.
-- **2026-06-26 — Agent docs centralized under `agents/`.** `AGENTS.md` (rules)
+- **2026-06-27 — Template baseline: the `intent-driven` OpenSpec framework.**
+  This repo ships configured for the `intent-driven` schema
+  (`openspec/config.yaml`): artifact chain **proposal → specs → design → adr →
+  tasks**, with a skill bound per artifact (proposal→grill-me,
+  specs→gherkin-authoring, design→c4-diagrams, adr→architectural-decision-records).
+  Skills live in `.claude/skills/`, subagents in `.claude/agents/`; the `opsx:*`
+  commands cover propose/explore/new/continue/apply/verify/sync/archive plus
+  `bulk-apply`. Git-discipline gates ("cross `main` between phases") live in
+  `AGENTS.md` and the `openspec-git-discipline` skill. Repo-level ADRs persist in
+  the top-level `adr/` folder (immutable, supersession-linked). Replace this
+  entry's specifics with real decisions as your project evolves.
+- **2026-06-27 — Agent docs centralized under `agents/`.** `AGENTS.md` (rules)
   and `MEMORY.md` (this file) live in `agents/`; root `CLAUDE.md` is a thin
   pointer. Requirements deliberately kept out of these files — they belong in
   `openspec/specs/` to avoid a second, drifting source of truth.

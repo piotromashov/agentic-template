@@ -1,6 +1,6 @@
-# smartcrate
+# PROJECT_NAME
 
-<!-- FILL IN: one or two sentences. What does smartcrate do, and for whom? -->
+<!-- FILL IN: one or two sentences. What does PROJECT_NAME do, and for whom? -->
 _TODO — short description of what this project does._
 
 > **Status:** greenfield. Built with **spec-driven development** — we agree on
@@ -10,8 +10,8 @@ _TODO — short description of what this project does._
 
 ## How this project is built
 
-This repo uses [**OpenSpec**](https://openspec.dev) for spec-driven development.
-Requirements live as plain-markdown specs checked into the repo, and every
+This repo uses [**OpenSpec**](https://openspec.dev) with the **`intent-driven`**
+schema. Requirements live as plain-markdown specs checked into the repo, and every
 change starts as a reviewable proposal *before* any code is written.
 
 The loop, run as slash commands in Claude Code or Cursor:
@@ -19,7 +19,7 @@ The loop, run as slash commands in Claude Code or Cursor:
 ```
 /opsx:propose "<idea>"   →   review   →   /opsx:apply   →   /opsx:archive
    (proposal, specs,                       (implement        (merge specs,
-    design, tasks)                          the tasks)         file the change)
+    design, adr, tasks)                     the tasks)         file the change)
 ```
 
 The payoff: you review **intent** (a spec delta) instead of reverse-engineering
@@ -37,7 +37,7 @@ supposed to do — not just what the code currently does.
 npm install -g @fission-ai/openspec@latest
 
 # 2. Clone and enter the repo
-git clone <repo-url> smartcrate && cd smartcrate
+git clone <repo-url> PROJECT_NAME && cd PROJECT_NAME
 
 # 3. (If starting fresh) initialize OpenSpec for your tools
 #    Already initialized in this repo — skip unless setting up a new project:
@@ -60,16 +60,19 @@ openspec validate --all  # check specs/changes for issues
 ## Project structure
 
 ```
-smartcrate/
+PROJECT_NAME/
 ├── README.md             ← you are here
 ├── CLAUDE.md             ← pointer to agents/ (for AI tools)
 ├── agents/
 │   ├── AGENTS.md         ← the rules: workflow, conventions, safety
 │   └── MEMORY.md         ← durable facts & decision log
 ├── openspec/
+│   ├── config.yaml       ← active schema (intent-driven) + per-artifact skill rules
+│   ├── schemas/          ← the intent-driven schema + artifact templates
 │   ├── specs/            ← living specs = WHAT the system does (source of truth)
 │   └── changes/          ← in-flight changes; archive/ holds completed ones
-├── .claude/ , .cursor/   ← OpenSpec slash commands + skills
+├── adr/                  ← durable Architecture Decision Records (immutable)
+├── .claude/ , .cursor/   ← OpenSpec commands + skills + subagents
 ├── .gitignore
 └── src/                  ← code (created as features are built)
 ```
@@ -91,10 +94,18 @@ and safety rules.
 
 ## Using this as a template
 
-This repo is a clean starting point for any spec-driven project. To reuse it:
-rename the project, replace the `TODO` placeholders in `README.md`,
-`agents/AGENTS.md`, and `agents/MEMORY.md`, trim `.gitignore` to your stack, and
-run `/opsx:propose` for your first feature.
+This repo is a clean starting point for any **intent-driven** OpenSpec project.
+It ships the `intent-driven` schema, the bound skills (`grill-me`, `c4-diagrams`,
+`gherkin-authoring`, `architectural-decision-records`, `openspec-git-discipline`,
+`adversarial-authoring`), the `opsx:*` commands, and the git-discipline gates. To
+reuse it:
+
+1. Replace the **`PROJECT_NAME`** placeholder everywhere (`README.md`,
+   `CLAUDE.md`, `agents/AGENTS.md`, `agents/MEMORY.md`, `adr/README.md`).
+2. Fill in the `TODO` placeholders (description, stack, build/run/test, license).
+3. Trim `.gitignore` to your stack.
+4. Run `/opsx:propose "your first feature"` — the artifact chain is
+   **proposal → specs → design → adr → tasks**.
 
 ---
 
