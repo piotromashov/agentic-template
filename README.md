@@ -63,7 +63,7 @@ mkdir -p ~/repos/plans      # where plans live, outside the repo
 
 Open the repo in Orca, start `claude` in the main tab, and say:
 
-> Read `ORCHESTRATOR.md` and act as the coordinator for this: *&lt;your ask&gt;*
+> Read `agents/ORCHESTRATOR.md` and act as the coordinator for this: *&lt;your ask&gt;*
 
 What happens next — you only answer, approve and merge:
 
@@ -106,7 +106,7 @@ skill for: …"*, ask Codex to *"use the `review-plan` skill on
 |---|---|
 | Understand every framework in the template, the orchestration roles and flow, and the plan files | [`docs/how-it-works.md`](docs/how-it-works.md) |
 | Know the rules agents follow here (workflow, git gates, safety) | [`agents/AGENTS.md`](agents/AGENTS.md) |
-| See the coordinator's own playbook (Spanish) | [`ORCHESTRATOR.md`](ORCHESTRATOR.md) |
+| See the coordinator's own playbook (Spanish) | [`agents/ORCHESTRATOR.md`](agents/ORCHESTRATOR.md) |
 | See why things are the way they are | [`agents/MEMORY.md`](agents/MEMORY.md) |
 
 ---

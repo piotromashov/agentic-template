@@ -96,9 +96,9 @@ Routine operational chatter does not go there.
 ## 3. Write the packet
 
 Into `~/repos/plans/<YYYY-MM-DD>-<slug>/` — the plans base (if your team uses
-another location, change it here, in `review-plan` and in `ORCHESTRATOR.md`),
-a plain directory that is never a checkout of the code you are planning
-against. Re-running for the same ask updates that directory instead of making
+another location, change it here, in `review-plan` and in
+`agents/ORCHESTRATOR.md`), a plain directory that is never a checkout of the
+code you are planning against. Re-running for the same ask updates that directory instead of making
 a second one. Never write secrets, tokens or credentials into any of these
 files.
 

@@ -22,7 +22,7 @@ an orchestrated run.
 | **Git discipline** | The gates: a proposal reaches `main` before `apply`; archive only from `main`, after merge | `.claude/skills/openspec-git-discipline/` |
 | **Adversarial authoring** | A "model council": an author subagent drafts, a reviewer subagent attacks | `.claude/skills/adversarial-authoring/`, `.claude/agents/` |
 | **`plan` / `review-plan`** | Turn an ask into a plan packet another model can execute unattended, then red-team it | `.agents/skills/plan/`, `.agents/skills/review-plan/` |
-| **Orchestration** | Playbook for a coordinator agent in Orca: plan, review, human gate, execute, report | [`ORCHESTRATOR.md`](../ORCHESTRATOR.md) |
+| **Orchestration** | Playbook for a coordinator agent in Orca: plan, review, human gate, execute, report | [`agents/ORCHESTRATOR.md`](../agents/ORCHESTRATOR.md) |
 | **Agent entry points** | `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex, OpenCode, others) both point to the operating manual | `CLAUDE.md`, `AGENTS.md`, `agents/` |
 | **No attribution** | Agents don't add `Co-Authored-By` or "Generated with" lines to commits and PRs | `.claude/settings.json`, `agents/AGENTS.md` |
 
@@ -113,7 +113,7 @@ current reference is `orca skills get orchestration --full`.
 | Role | Who | Does | Never does |
 |---|---|---|---|
 | **Human** | you | Answers the planning questions, approves at the gate, merges | — |
-| **Coordinator** | Claude in Orca's main tab (the most capable model you have), following `ORCHESTRATOR.md` | Plans with the `plan` skill, dispatches reviewer and executor, reconciles the review, reports | Write product code or OpenSpec artifacts, commit, push, merge |
+| **Coordinator** | Claude in Orca's main tab (the most capable model you have), following `agents/ORCHESTRATOR.md` | Plans with the `plan` skill, dispatches reviewer and executor, reconciles the review, reports | Write product code or OpenSpec artifacts, commit, push, merge |
 | **Reviewer** | Codex, with the `review-plan` skill, in the coordinator's worktree | Verifies the plan's load-bearing claims read-only, writes a verdict | Edit the plan or any code |
 | **Executor** | Claude, with the model and effort the plan picked, in a child worktree | Executes `MISSION.md`, verifies, commits on `exec-<slug>` | Push, merge, change the plan |
 
@@ -181,7 +181,7 @@ Step by step, from your side:
 5. **Close.** Read `EXECUTION.md` and the diff, then **you merge** (and run
    `/opsx:archive` from `main` if it applied an OpenSpec change).
 
-`ORCHESTRATOR.md` is written in Spanish (Rioplatense) because it is the
+`agents/ORCHESTRATOR.md` is written in Spanish (Rioplatense) because it is the
 coordinator's own prompt; the gate options stay in Spanish too.
 
 ### The plan packet
@@ -189,7 +189,7 @@ coordinator's own prompt; the gate options stay in Spanish too.
 The `plan` skill writes it **outside any repo**, in
 `~/repos/plans/<YYYY-MM-DD>-<slug>/`, so plans never mix with the code they
 describe. To use another location, change it in both skills and in
-`ORCHESTRATOR.md`.
+`agents/ORCHESTRATOR.md`.
 
 | File | Written by | Contents |
 |---|---|---|
@@ -228,8 +228,8 @@ complete.
 Know the limit on **production writes**: Claude Code's auto mode refuses
 commands that change live data even when settings allow them, so plan for a
 person to approve those steps in the executor's tab. The *Preflight de
-entorno* section of [`ORCHESTRATOR.md`](../ORCHESTRATOR.md) covers this and
-every other known way a run gets stuck, with how to recover.
+entorno* section of [`agents/ORCHESTRATOR.md`](../agents/ORCHESTRATOR.md)
+covers this and every other known way a run gets stuck, with how to recover.
 
 ---
 
@@ -240,11 +240,11 @@ PROJECT_NAME/
 ├── README.md             ← quick start
 ├── CLAUDE.md             ← pointer to agents/ (Claude Code)
 ├── AGENTS.md             ← same pointer, for Codex, OpenCode and other harnesses
-├── ORCHESTRATOR.md       ← coordinator playbook for Orca orchestration
 ├── docs/how-it-works.md  ← you are here
 ├── agents/
 │   ├── AGENTS.md         ← the rules: workflow, conventions, safety
-│   └── MEMORY.md         ← durable facts & decision log
+│   ├── MEMORY.md         ← durable facts & decision log
+│   └── ORCHESTRATOR.md   ← coordinator playbook for Orca orchestration
 ├── openspec/
 │   ├── config.yaml       ← active schema (intent-driven) + per-artifact skill rules
 │   ├── schemas/          ← the intent-driven schema + artifact templates

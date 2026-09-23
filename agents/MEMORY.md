@@ -23,7 +23,8 @@
 Newest first. One entry per decision: date, what was decided, why.
 
 - **2026-09-23 — Orchestrated mode ships with the template.**
-  [`ORCHESTRATOR.md`](../ORCHESTRATOR.md) makes a Claude coordinator plan with
+  [`ORCHESTRATOR.md`](ORCHESTRATOR.md) (kept in `agents/` with the other
+  agent docs, not at the root) makes a Claude coordinator plan with
   the `plan` skill, get an adversarial review from Codex (`review-plan`), stop
   at a mandatory human gate, and hand `MISSION.md` to an executor in its own
   worktree. The executor commits only on `exec-<slug>` (gate approval is the
