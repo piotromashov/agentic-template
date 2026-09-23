@@ -2,7 +2,7 @@
 
 The detail behind the [README](../README.md): every framework in the template,
 how the OpenSpec loop and orchestration fit together, and what happens inside
-an orchestrated run.
+an orchestrated run. For walkthroughs, see [`examples.md`](examples.md).
 
 - [Setup](#setup)
 - [What's inside](#whats-inside)

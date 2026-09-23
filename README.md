@@ -177,10 +177,25 @@ proposes one first.
 
 ---
 
+## Examples
+
+Step-by-step walkthroughs of what you say, what the agent does and what you
+check, in [`docs/examples.md`](docs/examples.md):
+
+1. **Add a feature, spec-first:** *"I want a small CLI that greets the user by
+   name. Propose it."*
+2. **Hand off a chore to three agents:** *"Read `agents/ORCHESTRATOR.md` and act
+   as the coordinator for: set up CI that runs the tests on every pull request."*
+3. **Orchestrate a feature:** the same pipeline, with an OpenSpec change inside.
+4. **Plan and review without Orca:** the `plan` and `review-plan` skills by hand.
+
+---
+
 ## Learn more
 
 | If you want… | Read |
 |---|---|
+| Walkthroughs of both flows, from the first sentence to the merge | [`docs/examples.md`](docs/examples.md) |
 | Setup, the full orchestration flow, the plan files and the project structure | [`docs/how-it-works.md`](docs/how-it-works.md) |
 | The exact rules agents follow | [`agents/AGENTS.md`](agents/AGENTS.md) |
 | The coordinator's playbook (Spanish) | [`agents/ORCHESTRATOR.md`](agents/ORCHESTRATOR.md) |
