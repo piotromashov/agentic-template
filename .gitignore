@@ -4,7 +4,8 @@
 #
 # NOT ignored (intentionally tracked — share these with the team):
 #   openspec/        specs + changes = source of truth
-#   .claude/ .cursor/ OpenSpec-generated slash commands & skills
+#   .claude/ .cursor/ OpenSpec-generated commands & skills + hand-maintained skills
+#   .agents/         canonical harness-neutral skills (plan, review-plan)
 #   agents/          AGENTS.md, MEMORY.md
 # ─────────────────────────────────────────────────────────────
 

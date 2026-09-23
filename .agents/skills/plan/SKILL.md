@@ -55,8 +55,9 @@ diagnosis is a hypothesis until you reproduce it.
 
 ## 2. Grill, in batches, until nothing is left that changes the outcome
 
-Use `AskUserQuestion`: up to four questions per round, each with concrete
-options and your recommended answer first. Iterate; three rounds is usually
+Use `AskUserQuestion` (or numbered questions in chat if the harness has no
+such tool): up to four questions per round, each with concrete options and
+your recommended answer first. Iterate; three rounds is usually
 enough. Stop when no remaining question would change the plan **or stall the
 executor**.
 
@@ -83,9 +84,9 @@ Sweep these classes every time, and ask the ones the evidence left open:
 **Nobody there to answer** (background run, `/loop`, subagent, non-interactive):
 do not block. Take your own recommended answer for each open question, record
 it in `ANALYSIS.md` under **Assumptions** with the reasoning, and list the
-questions that genuinely need the user under **For the user** in `PLAN.md`. Never
-assume an authorization: an ungranted permission becomes a hard stop plus a
-line under *For the user*.
+questions that genuinely need the user under **For the user** in `PLAN.md`.
+Never assume an authorization: an ungranted permission becomes a hard stop
+plus a line under *For the user*.
 
 When the grilling settles something durable — an architectural decision, a
 policy, a standing rule — record it where the project keeps durable
@@ -94,10 +95,12 @@ Routine operational chatter does not go there.
 
 ## 3. Write the packet
 
-Into `~/repos/plans/<YYYY-MM-DD>-<slug>/` — the plans base, a plain directory
-that is never a checkout of the code you are planning against. Re-running for the
-same ask updates that directory instead of making a second one. Never write
-secrets, tokens or credentials into any of these files.
+Into `~/repos/plans/<YYYY-MM-DD>-<slug>/` — the plans base (if your team uses
+another location, change it here, in `review-plan` and in `ORCHESTRATOR.md`),
+a plain directory that is never a checkout of the code you are planning
+against. Re-running for the same ask updates that directory instead of making
+a second one. Never write secrets, tokens or credentials into any of these
+files.
 
 **`ANALYSIS.md`** — the evidence base. What was asked and what it really
 means. Observed facts, claimed facts and hypotheses, in separate sections,

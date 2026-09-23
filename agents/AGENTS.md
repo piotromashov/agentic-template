@@ -1,8 +1,8 @@
 # AGENTS.md — PROJECT_NAME operating manual
 
 > The rules for AI agents (Claude Code, Cursor, Codex, OpenCode) working in
-> this repo: *how we work*, conventions, and safety. Keep it **lean**. This file does **not**
-> restate *what the system does* — that lives in `openspec/specs/` (the source
+> this repo: *how we work*, conventions, and safety. Keep it **lean**. This
+> file does **not** restate *what the system does* — that lives in `openspec/specs/` (the source
 > of truth). When the two disagree, the spec wins; fix this file.
 >
 > Companion: [`MEMORY.md`](MEMORY.md) holds durable *facts and decisions*
@@ -59,7 +59,8 @@ For larger or riskier work there is an orchestrated mode: a coordinator plans
 with the `plan` skill, Codex attacks the plan with `review-plan`, the human
 approves at a gate, and an executor runs `MISSION.md` in its own worktree. The
 playbook is [`ORCHESTRATOR.md`](../ORCHESTRATOR.md). Plan packets live in
-`~/repos/plans/`, never inside this repo.
+`~/repos/plans/`, never inside this repo, and never replace an OpenSpec
+change: a mission either applies a change already on `main` or proposes one.
 
 CLI for checking state (terminal, any time):
 
@@ -125,7 +126,9 @@ gates in brief:
   proposal is already on `main`.** Before apply: `git status --short`, confirm no
   uncommitted proposal files, confirm the proposal reached `main`.
 - **Archive** runs **only from `main`, after implementation is merged back.**
-- **Never auto-commit, branch, or merge** without explicit user approval. After
+- **Never auto-commit, branch, or merge** without explicit user approval. (In
+  orchestrated mode, approving a `MISSION.md` at the gate that grants "commit
+  on `exec-<slug>`" is that approval; push and merge stay with the human.) After
   propose and after archive, *ask* the user to commit; offer a PR branch.
 
 ---
@@ -148,9 +151,8 @@ gates in brief:
    skills `grill-me`, `c4-diagrams`, `architectural-decision-records`,
    `gherkin-authoring`, `openspec-git-discipline`, `adversarial-authoring`,
    `plan`, `review-plan` (canonical in `.agents/skills/`, symlinked into
-   `.claude/skills/`); the
-   agents `adversarial-author`/`adversarial-reviewer`; the `opsx:bulk-apply`
-   command. `openspec update` leaves these alone — they are not drift.
+   `.claude/skills/`); the agents `adversarial-author`/`adversarial-reviewer`;
+   the `opsx:bulk-apply` command. `openspec update` leaves these alone — they are not drift.
 6. **Never commit secrets** (`.env`, keys, tokens). If `git status` shows one,
    stop and fix `.gitignore` before committing anything else.
 7. **No force-push to `main`.** Rewrite only commits you haven't pushed.

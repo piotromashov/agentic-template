@@ -10,6 +10,8 @@
   workflow, and safety rules. **Start here.**
 - **[`agents/MEMORY.md`](agents/MEMORY.md)** — durable facts and decisions:
   operational/infra facts, decision log, project state.
+- **[`ORCHESTRATOR.md`](ORCHESTRATOR.md)** — only if you are the coordinator of an
+  orchestrated run (Orca): the playbook for plan → review → gate → execute.
 - **`openspec/specs/`** — the source of truth for *what the system does and
   why* (requirements). When specs and the docs above disagree, the spec wins.
 

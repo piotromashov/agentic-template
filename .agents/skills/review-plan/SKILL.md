@@ -112,8 +112,9 @@ its author.
 
 Report in the conversation: the verdict, the blocking findings in one line
 each, and where `REVIEW.md` is. One review round is the default. A second is
-warranted only when the planner contests a blocking finding, and then you
-review the contested point, not the whole plan again.
+warranted when the planner contests a blocking finding, or when the fixes it
+accepted change scope, architecture or the executing model; then you review
+the contested or changed points, not the whole plan again.
 
 ## Rules
 

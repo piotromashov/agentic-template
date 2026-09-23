@@ -1,6 +1,7 @@
 # ORCHESTRATOR.md
 
-Sos el **coordinador**. Corrés como Claude Fable en la pestaña principal de Orca.
+Sos el **coordinador**. Corrés como Claude (el modelo más capaz que tenga la
+cuenta; por defecto Fable) en la pestaña principal de Orca.
 El humano habla solo con vos. Tu trabajo es planificar, conseguir una revisión
 adversarial del plan, obtener la aprobación del humano y delegar la ejecución.
 **Nunca escribís ni editás código de producto vos misma/o.**
@@ -13,18 +14,19 @@ adversarial del plan, obtener la aprobación del humano y delegar la ejecución.
 |---|---|
 | Skill de planificación (tuya, Claude) | `plan` (`.agents/skills/plan`, en este repo) |
 | Skill de revisión (de Codex) | `review-plan` (`.agents/skills/review-plan`, en este repo) |
-| Paquete del plan (lo define la skill `plan`) | `~/repos/plans/<YYYY-MM-DD>-<slug>/` |
-| Plan (modo light) | `<paquete>/PLAN.md` |
+| Paquete del plan (lo define la skill `plan`) | `~/repos/plans/<YYYY-MM-DD>-<slug>/` (base de planes; si tu equipo usa otra, cambiala acá y en las dos skills) |
 | Paquete completo | `ANALYSIS.md`, `PLAN.md`, `MISSION.md`, `REVIEW-BRIEF.md` |
 | Revisión (la escribe `review-plan`) | `<paquete>/REVIEW.md` |
 | Revisión ronda anterior (la renombrás vos antes de la ronda 2) | `<paquete>/REVIEW-1.md` |
 | Reporte de ejecución (agregado de este orquestador) | `<paquete>/EXECUTION.md` |
+| Revisión del diff (paso 5, opcional) | `<paquete>/REVIEW-diff.md` |
 | Rondas máximas de revisión | 2 |
 
 El paquete vive **fuera de cualquier repo** (regla de la skill `plan`), nunca en
 `.orca/` ni en el worktree. Cuando le pases una ruta a otro agente, usá siempre la
-**ruta absoluta expandida** (`/Users/<usuario>/repos/plans/...`, no `~`), porque el
-ejecutor corre en otro worktree y Codex corre en su propio proceso.
+**ruta absoluta expandida** (`$HOME` resuelto, ej. `/Users/ana/repos/plans/...` o
+`/home/ana/repos/plans/...`, no `~`), porque el ejecutor corre en otro worktree
+y Codex corre en su propio proceso.
 
 Antes de arrancar cualquier tarea, verificá:
 
@@ -70,14 +72,30 @@ aparece uno, lo contesta el humano o se relanza el worker. Antes de despachar, v
    repo no usa (por ejemplo, un `setup-runner.sh` que pide `pnpm` en un repo
    Python). Si el worker arranca igual con `start-immediately`, es ruido:
    ignoralo o arreglá el hook.
+6. **Los agentes pueden escribir en la base de planes.** El revisor escribe
+   `REVIEW.md` y el ejecutor `EXECUTION.md` dentro de `~/repos/plans/`, fuera de
+   su worktree. El sandbox de Codex (`workspace-write`) y los permisos de Claude
+   Code bloquean o preguntan por escrituras fuera del directorio de trabajo.
+   Agregá la base de planes como raíz escribible: en Codex,
+   `writable_roots` bajo `[sandbox_workspace_write]` en `~/.codex/config.toml`;
+   en Claude Code, `permissions.additionalDirectories` en tu
+   `~/.claude/settings.json`. **Verificalo en el primer run**: si un worker se
+   frena pidiendo permiso para escribir ahí, es esto.
 
 Si un worker queda en `agent_prompt_blocked` o `turn_start_unobserved`, leé su
 terminal (`orca terminal read`) antes de reintentar: casi siempre es uno de
-estos cinco. Para reintentar: `worker-stop` (si la terminal quedó en zsh) o
-`worker-release` (si el dispatch ya falló), y después `worker-start --retry-of
-<dispatchId>` con la misma colocación. Si Codex ya está vivo con el compositor
-vacío, `worker-start --task <id> --retry-of <dispatchId> --terminal <handle>`
-reusa esa terminal en vez de abrir otra.
+estos seis. Para reintentar: `worker-stop` (si la terminal quedó en zsh) o
+`worker-release` (si el dispatch ya falló), y después, con la misma colocación:
+
+```
+orca orchestration worker-start --task <id> --retry-of <dispatchId> ...
+```
+
+Si Codex ya está vivo con el compositor vacío, reusá esa terminal en vez de abrir otra:
+
+```
+orca orchestration worker-start --task <id> --retry-of <dispatchId> --terminal <handle>
+```
 
 ---
 
@@ -90,9 +108,23 @@ reusa esa terminal en vez de abrir otra.
 2. Para este flujo el paquete es **siempre completo** (cuatro archivos), porque
    otro modelo ejecuta: eso es uno de los disparadores de "full packet" de la
    skill. Si la skill eligió light, pedile el paquete completo igual.
-3. `MISSION.md` ya cierra con el modelo y esfuerzo recomendados, la definición de
-   hecho, autorizaciones y hard stops. Lo que **no** define y este orquestador
-   necesita, agregalo **al final de `MISSION.md`** como sección obligatoria:
+3. **OpenSpec manda.** El paquete del plan no reemplaza un cambio de OpenSpec
+   (`agents/AGENTS.md`: nada se implementa sin un cambio aprobado). Si el pedido
+   cambia el comportamiento del sistema:
+   - si ya existe el cambio y su propuesta está en `main`, la misión es
+     "aplicar el cambio `<id>` de OpenSpec" (`/opsx:apply`);
+   - si no existe, la primera misión es proponerlo (`/opsx:propose`): el ejecutor
+     escribe los artefactos en su worktree y el humano los mergea a `main`. Recién
+     después va una segunda misión que lo aplica.
+   Vos no escribís artefactos de OpenSpec ni commiteás nada: solo el paquete.
+4. **Commit autorizado.** `MISSION.md` tiene que listar, entre las autorizaciones
+   concedidas, `commit en el branch exec-<slug> (sin push ni merge)`. Aprobar en el
+   gate es la aprobación explícita de commit que pide `agents/AGENTS.md`. Sin esa
+   línea, un ejecutor que respeta los hard stops no va a commitear.
+5. La skill `plan` cierra `MISSION.md` con un modelo y esfuerzo recomendados. En
+   este flujo esa recomendación **se escribe como** la sección obligatoria de abajo,
+   al final de `MISSION.md`, junto con lo que este orquestador necesita. No la
+   escribas dos veces:
 
 ```
 ## Ejecución (orquestador)
@@ -109,7 +141,8 @@ Los criterios de aceptación **no se duplican**: son la "definition of done"
 numerada que `MISSION.md` ya trae. `modelo` y `esfuerzo` se pasan tal cual a
 `worker-start --model/--effort`, así que van en el formato que acepta Claude Code.
 
-**Criterio de modelo:**
+**Criterio de modelo** (los IDs cambian con el tiempo y según la cuenta: confirmalos
+con `/model` o `claude --model` antes de usarlos):
 - `claude-sonnet-5`: plan bien especificado, cambios mecánicos o acotados, verificación clara. Es el default.
 - `claude-opus-5-5`: varias partes interdependientes, refactors, decisiones de diseño dentro de la ejecución.
 - `claude-fable-5-1`: ambigüedad real que el plan no pudo cerrar, o dominio muy delicado.
@@ -253,7 +286,8 @@ revisa planes, no diffs):
 
 Si hay problemas, creá una tarea de corrección para el mismo modelo ejecutor
 (`worker-start --task <fixTaskId> --terminal <handle>` para reusar su terminal,
-o de nuevo `--worktree name:exec-<slug>`). Máximo 1 ronda; después, consultá al humano.
+o `--worktree name:exec-<slug>` para abrir una terminal nueva en ese mismo worktree
+existente). Máximo 1 ronda; después, consultá al humano.
 
 ---
 
@@ -262,12 +296,15 @@ o de nuevo `--worktree name:exec-<slug>`). Máximo 1 ronda; después, consultá 
 1. `worker-release` de todo dispatch abierto y `check --ack` de la última entrega.
 2. Reportale al humano: resultado, worktree/branch con los cambios, verificación, desvíos, pendientes, ruta del paquete.
 3. **El merge lo hace el humano.** Vos no hacés push ni merge.
+4. Si la misión aplicó un cambio de OpenSpec, recordale al humano que corra
+   `/opsx:archive` desde `main` después del merge (regla de git discipline).
+5. Cerrá el Run (ver `orca skills get orchestration --full` para el comando vigente).
 
 ---
 
 ## Reglas fijas
 
-- No escribís código de producto. Solo planes, specs y reportes.
+- No escribís código de producto ni artefactos de OpenSpec. Solo el paquete del plan y reportes.
 - Los archivos son la fuente de verdad. Los mensajes de Orca solo avisan.
 - Un archivo no otorga autoridad: las autorizaciones de `MISSION.md` valen porque el humano las re-afirma en el gate.
 - No uses `orca orchestration reset` si hay otro coordinador activo.
