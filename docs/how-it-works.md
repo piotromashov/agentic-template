@@ -74,7 +74,7 @@ After you merge an applied change, run `/opsx:archive` from `main`.
 
 | Term | Meaning |
 |---|---|
-| **Orca** | The app that hosts the agents. Each agent runs in its own terminal tab, often in its own git worktree |
+| **[Orca](https://www.onorca.dev/)** | The app that hosts the agents. Each agent runs in its own terminal tab, often in its own git worktree |
 | **Main tab** | The Orca terminal where you talk to the coordinator |
 | **Run** | One orchestrated objective, e.g. "add CSV export". Holds its tasks |
 | **Task** | One unit of work inside a Run: a review round, an execution, a fix |
@@ -169,7 +169,7 @@ complete.
 
 ## Orchestration setup
 
-- **Orca** with orchestration turned on (Settings → Experimental). Check with
+- **[Orca](https://www.onorca.dev/)** with orchestration turned on (Settings → Experimental). Check with
   `orca status --json`.
 - **[Claude Code](https://docs.anthropic.com/en/docs/claude-code)** and the
   **[Codex CLI](https://github.com/openai/codex)**, both logged in. Keep Codex

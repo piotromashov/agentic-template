@@ -45,7 +45,7 @@ That's the whole loop: **propose → review → apply → archive.**
 
 ## Try the orchestrated mode
 
-For bigger or riskier work. **You also need:** Orca with orchestration on
+For bigger or riskier work. **You also need:** [Orca](https://www.onorca.dev/) with orchestration on
 (Settings → Experimental) and the [Codex CLI](https://github.com/openai/codex)
 logged in.
 
