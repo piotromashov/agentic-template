@@ -176,8 +176,9 @@ sequenceDiagram
   Note over You: read the diff and merge
 ```
 
-To start one, open the repo in Orca and tell Claude: *"Read
-`agents/ORCHESTRATOR.md` and act as the coordinator for: …"*.
+To start one, open the repo in Orca and tell Claude: *"Act as the coordinator
+for: …"*. The pointer files tell it to read `agents/ORCHESTRATOR.md` and follow
+it; you don't have to.
 
 When the work changes what the system does, the orchestrated run still goes
 through OpenSpec: the mission either applies a change already on `main` or

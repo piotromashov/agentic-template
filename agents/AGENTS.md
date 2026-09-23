@@ -58,7 +58,8 @@ Supporting command: **`/opsx:sync`** (reconcile specs with reality). The
 For larger or riskier work there is an orchestrated mode: a coordinator plans
 with the `plan` skill, Codex attacks the plan with `review-plan`, the human
 approves at a gate, and an executor runs `MISSION.md` in its own worktree. The
-playbook is [`ORCHESTRATOR.md`](ORCHESTRATOR.md). Plan packets live in
+playbook is [`ORCHESTRATOR.md`](ORCHESTRATOR.md): when the user tells you to
+act as the coordinator, read it in full and follow it. Plan packets live in
 `~/repos/plans/`, never inside this repo, and never replace an OpenSpec
 change: a mission either applies a change already on `main` or proposes one.
 

@@ -22,7 +22,7 @@ Then say what you want. Pick the level that matches the task:
 |---|---|---|
 | [**1. Just ask**](#level-1-just-ask) | Questions, docs, tooling, chores: anything that doesn't change what the system does | *"Add Prettier and a `format` script."* |
 | [**2. Spec-first**](#level-2-spec-first) | A feature, a fix, any change in behaviour | *"… Propose it."* |
-| [**3. Orchestration**](#level-3-orchestration) | Big or risky work you want to hand to a team of agents, and only approve and merge | *"Read `agents/ORCHESTRATOR.md` and act as the coordinator for: …"* |
+| [**3. Orchestration**](#level-3-orchestration) | Big or risky work you want to hand to a team of agents, and only approve and merge | *"Act as the coordinator for: …"* |
 
 The agent picks up the rules at every level: at level 1 it will tell you when
 something needs a spec, and at level 3 the team still goes through level 2
@@ -106,11 +106,11 @@ Codex CLI.
 
 **Examples**
 
-> Read `agents/ORCHESTRATOR.md` and act as the coordinator for: set up CI that
-> runs the tests on every pull request.
+> Act as the coordinator for: set up CI that runs the tests on every pull
+> request.
 
-> Read `agents/ORCHESTRATOR.md` and act as the coordinator for: let users pick
-> the greeting language with `--lang es|en`.
+> Act as the coordinator for: let users pick the greeting language with
+> `--lang es|en`.
 
 **Workflow.** A coordinator grills you until no decision is left open and
 writes a plan (`plan` skill). Codex reads it cold and attacks it

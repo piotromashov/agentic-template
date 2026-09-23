@@ -183,8 +183,8 @@ The ask here doesn't change what the CLI does, so no OpenSpec change is needed.
 
 ### You say, in Orca's main tab
 
-> Read `agents/ORCHESTRATOR.md` and act as the coordinator for: set up CI that
-> runs the tests on every pull request.
+> Act as the coordinator for: set up CI that runs the tests on every pull
+> request.
 
 ### The coordinator plans with you
 
@@ -268,8 +268,8 @@ never pushes or merges.
 Same pipeline as example 4, but the ask changes behaviour, so OpenSpec is part
 of it:
 
-> Read `agents/ORCHESTRATOR.md` and act as the coordinator for: let users pick
-> the greeting language with `--lang es|en`.
+> Act as the coordinator for: let users pick the greeting language with
+> `--lang es|en`.
 
 The coordinator checks `openspec/changes/` and `main` first:
 
@@ -292,6 +292,6 @@ add-lang-flag"* from `main`, and the new scenarios become part of
 - *"Propose a feature that …"* runs the OpenSpec loop.
 - *"Explore how we could …"* thinks it through before anything is proposed.
 - *"What changes are in flight?"* lists open changes.
-- *"Read `agents/ORCHESTRATOR.md` and act as the coordinator for: …"* starts a
+- *"Act as the coordinator for: …"* starts a
   three-agent run.
 - *"Use the `plan` skill for: …"* writes a plan you can hand to anyone.
