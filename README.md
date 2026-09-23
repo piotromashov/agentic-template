@@ -194,5 +194,4 @@ proposes one first.
 
 ## License
 
-<!-- FILL IN: e.g. MIT. Add a LICENSE file. -->
-_TODO_
+[MIT](LICENSE). Use it, change it, ship it; keep the copyright notice.

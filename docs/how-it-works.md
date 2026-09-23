@@ -32,7 +32,8 @@ first. With Claude Code or Cursor you can also drive it by hand:
 
 1. Replace `PROJECT_NAME` in `CLAUDE.md`, `AGENTS.md`, `agents/AGENTS.md`,
    `agents/MEMORY.md` and `adr/README.md`, and rewrite the README.
-2. Fill in the `TODO`s (description, stack, build/run/test, license).
+2. Fill in the `TODO`s (description, stack, build/run/test). The template is
+   MIT-licensed; keep `LICENSE` or replace it with your project's own.
 3. Trim `.gitignore` to your stack.
 
 **On Windows**, enable symlinks before cloning
