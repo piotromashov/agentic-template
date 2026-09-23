@@ -1,7 +1,7 @@
 # AGENTS.md — PROJECT_NAME operating manual
 
-> The rules for AI agents (Claude Code, Cursor) working in this repo: *how we
-> work*, conventions, and safety. Keep it **lean**. This file does **not**
+> The rules for AI agents (Claude Code, Cursor, Codex, OpenCode) working in
+> this repo: *how we work*, conventions, and safety. Keep it **lean**. This file does **not**
 > restate *what the system does* — that lives in `openspec/specs/` (the source
 > of truth). When the two disagree, the spec wins; fix this file.
 >
@@ -103,6 +103,8 @@ end-to-end, say so.
 - **Commit specs and code together.** OpenSpec is built on specs being checked
   in alongside the code they describe.
 - Why-focused commit messages. One coherent change per commit.
+- **No co-author trailers.** Never add `Co-Authored-By:` (Claude or anyone
+  else) or "Generated with" lines to commits or PR descriptions.
 - Don't commit secrets. Keep `.gitignore` current.
 
 ### Git discipline (the gates)

@@ -62,7 +62,8 @@ openspec validate --all  # check specs/changes for issues
 ```
 PROJECT_NAME/
 ├── README.md             ← you are here
-├── CLAUDE.md             ← pointer to agents/ (for AI tools)
+├── CLAUDE.md             ← pointer to agents/ (Claude Code)
+├── AGENTS.md             ← same pointer, for Codex, OpenCode and other harnesses
 ├── agents/
 │   ├── AGENTS.md         ← the rules: workflow, conventions, safety
 │   └── MEMORY.md         ← durable facts & decision log
@@ -101,7 +102,7 @@ It ships the `intent-driven` schema, the bound skills (`grill-me`, `c4-diagrams`
 reuse it:
 
 1. Replace the **`PROJECT_NAME`** placeholder everywhere (`README.md`,
-   `CLAUDE.md`, `agents/AGENTS.md`, `agents/MEMORY.md`, `adr/README.md`).
+   `CLAUDE.md`, `AGENTS.md`, `agents/AGENTS.md`, `agents/MEMORY.md`, `adr/README.md`).
 2. Fill in the `TODO` placeholders (description, stack, build/run/test, license).
 3. Trim `.gitignore` to your stack.
 4. Run `/opsx:propose "your first feature"` — the artifact chain is
