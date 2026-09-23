@@ -1,15 +1,16 @@
 # Examples
 
-Four walkthroughs, from the simplest to the full pipeline. Each shows **what
+Four walkthroughs, in the same order as the README levels: spec-first, plan and
+review, then orchestration. Each shows **what
 you say**, **what the agent does**, and **what you check**. Agent replies and
 file contents are illustrative: yours will differ in wording, not in shape.
 
 | Example | Flow | Use it when |
 |---|---|---|
 | [1. Add a feature, spec-first](#1-add-a-feature-spec-first) | OpenSpec, one agent | You want a new behaviour and you're driving |
-| [2. Hand off a chore to three agents](#2-hand-off-a-chore-to-three-agents) | Orchestration | The work is bigger or riskier than you want to babysit, and doesn't change behaviour |
-| [3. Orchestrate a feature](#3-orchestrate-a-feature) | Orchestration + OpenSpec | A behaviour change that deserves a reviewed plan |
-| [4. Plan and review without Orca](#4-plan-and-review-without-orca) | `plan` + `review-plan` by hand | You want the second opinion without the pipeline |
+| [2. Plan and review without Orca](#2-plan-and-review-without-orca) | `plan` + `review-plan` by hand | You want a second model's opinion on the plan, without the pipeline |
+| [3. Hand off a chore to three agents](#3-hand-off-a-chore-to-three-agents) | Orchestration | The work is bigger or riskier than you want to babysit, and doesn't change behaviour |
+| [4. Orchestrate a feature](#4-orchestrate-a-feature) | Orchestration + OpenSpec | A behaviour change that deserves a reviewed plan |
 
 The running project in all four is a small greeting CLI, built from zero.
 
@@ -97,7 +98,33 @@ it.
 
 ---
 
-## 2. Hand off a chore to three agents
+## 2. Plan and review without Orca
+
+The two skills work in any session, so you get the second opinion without the
+pipeline.
+
+1. **Plan, in Claude Code:**
+
+   > Use the `plan` skill for: migrate the CLI from CommonJS to ES modules.
+
+   It grills you and writes the packet to `~/repos/plans/<date>-<slug>/`.
+
+2. **Review, in Codex:**
+
+   > Use the `review-plan` skill on `~/repos/plans/2026-09-23-esm-migration/`.
+
+   It writes `REVIEW.md` next to the plan.
+
+3. **Reconcile, back in Claude Code:**
+
+   > Read `REVIEW.md` and answer each finding in `PLAN.md`.
+
+4. **Execute:** open a fresh session and paste `MISSION.md`. It was written to
+   work with no other context.
+
+---
+
+## 3. Hand off a chore to three agents
 
 **Tool:** [Orca](https://www.onorca.dev/), with Claude in the main tab and
 Codex available. First time? Do the
@@ -187,9 +214,9 @@ never pushes or merges.
 
 ---
 
-## 3. Orchestrate a feature
+## 4. Orchestrate a feature
 
-Same pipeline as example 2, but the ask changes behaviour, so OpenSpec is part
+Same pipeline as example 3, but the ask changes behaviour, so OpenSpec is part
 of it:
 
 > Read `agents/ORCHESTRATOR.md` and act as the coordinator for: let users pick
@@ -207,32 +234,6 @@ The coordinator checks `openspec/changes/` and `main` first:
 Either way, after you merge the implementation, say *"archive
 add-lang-flag"* from `main`, and the new scenarios become part of
 `openspec/specs/greeting/spec.md`.
-
----
-
-## 4. Plan and review without Orca
-
-The two skills work in any session, so you get the second opinion without the
-pipeline.
-
-1. **Plan, in Claude Code:**
-
-   > Use the `plan` skill for: migrate the CLI from CommonJS to ES modules.
-
-   It grills you and writes the packet to `~/repos/plans/<date>-<slug>/`.
-
-2. **Review, in Codex:**
-
-   > Use the `review-plan` skill on `~/repos/plans/2026-09-23-esm-migration/`.
-
-   It writes `REVIEW.md` next to the plan.
-
-3. **Reconcile, back in Claude Code:**
-
-   > Read `REVIEW.md` and answer each finding in `PLAN.md`.
-
-4. **Execute:** open a fresh session and paste `MISSION.md`. It was written to
-   work with no other context.
 
 ---
 
