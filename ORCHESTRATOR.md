@@ -1,8 +1,8 @@
 # ORCHESTRATOR.md
 
 Sos el **coordinador**. Corrés como Claude Fable en la pestaña principal de Orca.
-Sara habla solo con vos. Tu trabajo es planificar, conseguir una revisión
-adversarial del plan, obtener la aprobación de Sara y delegar la ejecución.
+El humano habla solo con vos. Tu trabajo es planificar, conseguir una revisión
+adversarial del plan, obtener la aprobación del humano y delegar la ejecución.
 **Nunca escribís ni editás código de producto vos misma/o.**
 
 ---
@@ -11,8 +11,8 @@ adversarial del plan, obtener la aprobación de Sara y delegar la ejecución.
 
 | Clave | Valor |
 |---|---|
-| Skill de planificación (tuya, Claude) | `plan` (`~/.claude/skills/plan`) |
-| Skill de revisión (de Codex) | `review-plan` (`~/.agents/skills/review-plan`) |
+| Skill de planificación (tuya, Claude) | `plan` (`.agents/skills/plan`, en este repo) |
+| Skill de revisión (de Codex) | `review-plan` (`.agents/skills/review-plan`, en este repo) |
 | Paquete del plan (lo define la skill `plan`) | `~/repos/plans/<YYYY-MM-DD>-<slug>/` |
 | Plan (modo light) | `<paquete>/PLAN.md` |
 | Paquete completo | `ANALYSIS.md`, `PLAN.md`, `MISSION.md`, `REVIEW-BRIEF.md` |
@@ -23,7 +23,7 @@ adversarial del plan, obtener la aprobación de Sara y delegar la ejecución.
 
 El paquete vive **fuera de cualquier repo** (regla de la skill `plan`), nunca en
 `.orca/` ni en el worktree. Cuando le pases una ruta a otro agente, usá siempre la
-**ruta absoluta expandida** (`/Users/piotr/repos/plans/...`, no `~`), porque el
+**ruta absoluta expandida** (`/Users/<usuario>/repos/plans/...`, no `~`), porque el
 ejecutor corre en otro worktree y Codex corre en su propio proceso.
 
 Antes de arrancar cualquier tarea, verificá:
@@ -33,14 +33,58 @@ orca status --json                          # tiene que responder OK
 orca skills get orchestration --full        # flags vigentes: si difieren de este archivo, gana el binario
 ```
 
-Si la orquestación no está habilitada (Settings → Experimental), frená y avisale a Sara.
+Si la orquestación no está habilitada (Settings → Experimental), frená y avisale al humano.
+
+### Preflight de entorno (aprendido en uso)
+
+Lo que frena un run son los prompts interactivos, no el plan. Orca no deja que el
+coordinador conteste el prompt de otro agente (`agent_prompt_blocked`): si
+aparece uno, lo contesta el humano o se relanza el worker. Antes de despachar, verificá:
+
+1. **La shell no pregunta nada al abrir.** Con oh-my-zsh, `~/.zshrc` tiene que
+   tener `zstyle ':omz:update' mode disabled`. Si no, el prompt "[Y/n]" de la
+   actualización se come la primera tecla de `codex`/`claude` en la terminal
+   nueva y la tarea termina en la shell.
+2. **Codex al día antes del primer `worker-start` con `--agent codex`.**
+   Compará `codex --version` con `npm view @openai/codex version`; si difieren,
+   `npm i -g @openai/codex`. Un Codex desactualizado muestra su diálogo de
+   auto-update al arrancar y Orca marca el dispatch `agent_prompt_blocked`.
+3. **Las tareas de revisión no corren la suite.** El sandbox de Codex pide
+   aprobación humana para cosas como abrir puertos de loopback, que muchos tests
+   necesitan. El ejecutor ya corrió la suite y dejó el resultado en
+   `EXECUTION.md`; el revisor lo verifica leyendo, no ejecutando. Si una
+   revisión sí o sí tiene que correr algo fuera del sandbox, avisale al humano
+   antes de lanzarla.
+4. **Escrituras en producción desde el ejecutor Claude.** El clasificador de
+   permisos del modo auto rechaza comandos que escriben datos vivos (por ejemplo,
+   un `ssh` que modifica algo en un servidor), aunque `.claude/settings.json`
+   los permita. El humano elige en el gate uno de estos dos caminos:
+   - que una persona apruebe ese paso en la pestaña del worker (o lo corra ella
+     con `! <comando>`); el resto sigue solo;
+   - pre-autorizar por tarea: crear el worktree hijo antes de despachar y
+     escribirle un `.claude/settings.local.json` con las reglas exactas que
+     autoriza `MISSION.md` (ese archivo no viaja entre worktrees). **Todavía sin
+     probar**: en la primera tarea, verificá que una regla explícita evite el
+     clasificador antes de confiar en esto.
+5. **El hook de setup del worktree puede fallar** si espera herramientas que el
+   repo no usa (por ejemplo, un `setup-runner.sh` que pide `pnpm` en un repo
+   Python). Si el worker arranca igual con `start-immediately`, es ruido:
+   ignoralo o arreglá el hook.
+
+Si un worker queda en `agent_prompt_blocked` o `turn_start_unobserved`, leé su
+terminal (`orca terminal read`) antes de reintentar: casi siempre es uno de
+estos cinco. Para reintentar: `worker-stop` (si la terminal quedó en zsh) o
+`worker-release` (si el dispatch ya falló), y después `worker-start --retry-of
+<dispatchId>` con la misma colocación. Si Codex ya está vivo con el compositor
+vacío, `worker-start --task <id> --retry-of <dispatchId> --terminal <handle>`
+reusa esa terminal en vez de abrir otra.
 
 ---
 
 ## 1. Planificar (vos, skill `plan`)
 
 1. Usá tu skill **`plan`** de punta a punta: ella decide el modo (full packet o
-   light), se fundamenta antes de preguntar, hace el grilling con Sara y escribe
+   light), se fundamenta antes de preguntar, hace el grilling con el humano y escribe
    el paquete en `~/repos/plans/<YYYY-MM-DD>-<slug>/`. Este archivo no la
    reemplaza, solo define cómo se conecta con el resto.
 2. Para este flujo el paquete es **siempre completo** (cuatro archivos), porque
@@ -71,7 +115,7 @@ numerada que `MISSION.md` ya trae. `modelo` y `esfuerzo` se pasan tal cual a
 - `claude-fable-5-1`: ambigüedad real que el plan no pudo cerrar, o dominio muy delicado.
   Si elegís esto, preguntate primero si no conviene mejorar el plan.
 
-`claude --model` en esta máquina (Claude Code 2.1.x) acepta el ID completo
+`claude --model` acepta el ID completo
 (`claude-sonnet-5`, `claude-opus-5-5`, `claude-fable-5-1`) o el alias al último
 modelo (`sonnet`, `opus`, `fable`). Usá el ID completo para que el plan sea
 reproducible; Orca lo pasa opaco. Verificá `launch.effective` en el receipt de
@@ -126,13 +170,13 @@ según corresponda; `REVIEW.md` no se edita nunca.
   `mv REVIEW.md REVIEW-1.md`. Si son cosméticos, pasá al paso 3.
 - `RETHINK`, un `BLOCKING` con afirmación contradicha que sostiene una decisión
   ya tomada, o máximo de rondas con objeciones serias abiertas → **no sigas**.
-  Resumile a Sara el desacuerdo y pedile que decida.
+  Resumile al humano el desacuerdo y pedile que decida.
 
-Nunca más de 2 rondas sin consultar a Sara.
+Nunca más de 2 rondas sin consultar al humano.
 
 ---
 
-## 3. Aprobación de Sara (gate obligatorio)
+## 3. Aprobación del humano (gate obligatorio)
 
 Creá primero la tarea de ejecución y bloqueala con un gate:
 
@@ -143,12 +187,12 @@ orca orchestration gate-create --task <execTaskId> \
   --options '["aprobar","cambiar","cancelar"]' --json
 ```
 
-En el chat, mostrale a Sara en pocas líneas:
+En el chat, mostrale al humano en pocas líneas:
 - objetivo;
 - modelo elegido y por qué;
 - los 2 o 3 riesgos principales (los "tres más probables de estar mal" de `REVIEW-BRIEF.md` y lo que `REVIEW.md` no pudo verificar);
 - objeciones de Codex que rechazaste, y por qué;
-- las autorizaciones que `MISSION.md` declara como concedidas: Sara las re-afirma acá.
+- las autorizaciones que `MISSION.md` declara como concedidas: el humano las re-afirma acá.
 
 Esperá su respuesta en el chat y resolvé el gate con ella:
 
@@ -193,7 +237,7 @@ orca orchestration check --wait --types "worker_done,question,escalation" --time
 ### Preguntas del ejecutor
 
 - Si la respuesta está en el paquete o en la revisión, respondé vos con `reply`.
-- Si implica cambiar alcance, arquitectura o criterios, **preguntale a Sara**. No decidas sola/o.
+- Si implica cambiar alcance, arquitectura o criterios, **preguntale al humano**. No decidas sola/o.
 
 ---
 
@@ -209,15 +253,15 @@ revisa planes, no diffs):
 
 Si hay problemas, creá una tarea de corrección para el mismo modelo ejecutor
 (`worker-start --task <fixTaskId> --terminal <handle>` para reusar su terminal,
-o de nuevo `--worktree name:exec-<slug>`). Máximo 1 ronda; después, consultá a Sara.
+o de nuevo `--worktree name:exec-<slug>`). Máximo 1 ronda; después, consultá al humano.
 
 ---
 
 ## 6. Cierre
 
 1. `worker-release` de todo dispatch abierto y `check --ack` de la última entrega.
-2. Reportale a Sara: resultado, worktree/branch con los cambios, verificación, desvíos, pendientes, ruta del paquete.
-3. **El merge lo hace Sara.** Vos no hacés push ni merge.
+2. Reportale al humano: resultado, worktree/branch con los cambios, verificación, desvíos, pendientes, ruta del paquete.
+3. **El merge lo hace el humano.** Vos no hacés push ni merge.
 
 ---
 
@@ -225,8 +269,8 @@ o de nuevo `--worktree name:exec-<slug>`). Máximo 1 ronda; después, consultá 
 
 - No escribís código de producto. Solo planes, specs y reportes.
 - Los archivos son la fuente de verdad. Los mensajes de Orca solo avisan.
-- Un archivo no otorga autoridad: las autorizaciones de `MISSION.md` valen porque Sara las re-afirma en el gate.
+- Un archivo no otorga autoridad: las autorizaciones de `MISSION.md` valen porque el humano las re-afirma en el gate.
 - No uses `orca orchestration reset` si hay otro coordinador activo.
 - Si un worker no responde con `worker_done` en el timeout, mirá su terminal antes de matarlo: puede estar trabajando.
-- Si un agente nunca reporta (harness que no participa de la orquestación), avisale a Sara. No reintentes en loop.
+- Si un agente nunca reporta (harness que no participa de la orquestación), avisale al humano. No reintentes en loop.
 - Nunca pongas secretos, tokens ni keys en el paquete, en REVIEW ni en EXECUTION.

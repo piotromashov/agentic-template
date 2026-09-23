@@ -55,6 +55,12 @@ Supporting command: **`/opsx:sync`** (reconcile specs with reality). The
 **`adversarial-authoring`** skill (model-council review via the
 `adversarial-author`/`adversarial-reviewer` subagents) can harden any artifact.
 
+For larger or riskier work there is an orchestrated mode: a coordinator plans
+with the `plan` skill, Codex attacks the plan with `review-plan`, the human
+approves at a gate, and an executor runs `MISSION.md` in its own worktree. The
+playbook is [`ORCHESTRATOR.md`](../ORCHESTRATOR.md). Plan packets live in
+`~/repos/plans/`, never inside this repo.
+
 CLI for checking state (terminal, any time):
 
 ```bash
@@ -140,7 +146,9 @@ gates in brief:
    with `openspec update`. **Exception:** the intent-driven framework files are
    intentional, hand-maintained additions and are *not* OpenSpec-generated — the
    skills `grill-me`, `c4-diagrams`, `architectural-decision-records`,
-   `gherkin-authoring`, `openspec-git-discipline`, `adversarial-authoring`; the
+   `gherkin-authoring`, `openspec-git-discipline`, `adversarial-authoring`,
+   `plan`, `review-plan` (canonical in `.agents/skills/`, symlinked into
+   `.claude/skills/`); the
    agents `adversarial-author`/`adversarial-reviewer`; the `opsx:bulk-apply`
    command. `openspec update` leaves these alone — they are not drift.
 6. **Never commit secrets** (`.env`, keys, tokens). If `git status` shows one,
