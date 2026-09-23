@@ -35,10 +35,19 @@ core OpenSpec commands and skills (`.cursor/`), but not git discipline,
 
 ## The OpenSpec loop
 
-```
-/opsx:propose "<idea>"   →   review   →   /opsx:apply   →   /opsx:archive
-   (proposal, specs,                       (implement        (merge specs,
-    design, adr, tasks)                     the tasks)         file the change)
+```mermaid
+flowchart LR
+  subgraph propose["/opsx:propose — one skill per artifact"]
+    direction LR
+    PR["proposal<br/><i>grill-me</i>"] --> SP["specs<br/><i>gherkin-authoring</i>"]
+    SP --> DE["design<br/><i>c4-diagrams</i>"]
+    DE --> AD["adr<br/><i>architectural-decision-records</i>"]
+    AD --> TA["tasks"]
+  end
+  propose --> RV{"You review<br/>the intent"}
+  RV -- "refine" --> propose
+  RV -- "approved, merged to main" --> AP["/opsx:apply"]
+  AP --> AR["/opsx:archive<br/>deltas merge into openspec/specs/"]
 ```
 
 You review **intent** (a spec delta) instead of reverse-engineering it from a
@@ -62,6 +71,18 @@ system does, the orchestrated mission is either:
 - **apply** a change whose proposal is already on `main` (`/opsx:apply <id>`), or
 - **propose** it: the executor writes the change's artifacts, you merge them to
   `main`, and a second mission applies it.
+
+```mermaid
+flowchart TD
+  Q{"Does the ask change<br/>what the system does?"}
+  Q -- "no (docs, tooling, ops)" --> M0["Mission: do the work"]
+  Q -- yes --> H{"Is its OpenSpec change<br/>already on main?"}
+  H -- yes --> M2["Mission: /opsx:apply &lt;id&gt;"]
+  H -- no --> M1["Mission 1: /opsx:propose"]
+  M1 --> MG["You merge the proposal to main"]
+  MG --> M2
+  M2 --> AR["You merge, then /opsx:archive from main"]
+```
 
 The executor follows `agents/AGENTS.md` either way, including the git gates.
 After you merge an applied change, run `/opsx:archive` from `main`.
@@ -99,26 +120,46 @@ current reference is `orca skills get orchestration --full`.
 Reviewing with a **different model** is the point: it reads the plan cold and
 doesn't share the planner's blind spots.
 
+Where each one works, and what it reads and writes:
+
+```mermaid
+flowchart LR
+  subgraph W1["Main worktree"]
+    C["Coordinator · Claude<br/>(Orca main tab)"]
+    R["Reviewer · Codex<br/>(read-only)"]
+  end
+  subgraph W2["Child worktree · branch exec-slug"]
+    E["Executor · Claude<br/>(builds and commits here)"]
+  end
+  P[("~/repos/plans/date-slug/<br/>the plan packet")]
+  C -- "writes the plan" --> P
+  R -- "writes REVIEW.md" --> P
+  E -- "reads MISSION.md,<br/>writes EXECUTION.md" --> P
+  W2 -. "you merge" .-> W1
+```
+
 ### The flow
 
+```mermaid
+flowchart TD
+  ask(["Your ask"]) --> plan["1 · PLAN<br/>Coordinator + plan skill<br/>asks until nothing is open"]
+  plan --> packet[("Plan packet<br/>~/repos/plans/date-slug/")]
+  packet --> review["2 · REVIEW<br/>Codex + review-plan<br/>writes REVIEW.md"]
+  review --> verdict{"Verdict"}
+  verdict -- "REVISE" --> fix["Coordinator answers each finding<br/>in PLAN.md and fixes the packet"]
+  fix -- "round 2 if needed<br/>(max 2)" --> review
+  fix -- "fixes settled" --> gate
+  verdict -- "SHIP" --> gate{"3 · GATE<br/>you decide"}
+  verdict -- "RETHINK" --> decide(["You decide how to go on"])
+  gate -- "cambiar" --> plan
+  gate -- "cancelar" --> stop(["Run closed"])
+  gate -- "aprobar" --> exec["4 · EXECUTE<br/>Claude in child worktree exec-slug<br/>builds, verifies, commits"]
+  exec --> check["5 · CHECK (optional)<br/>Codex reviews the diff"]
+  check --> close(["6 · CLOSE<br/>you merge"])
 ```
-1. PLAN      you ⇄ Coordinator (plan skill)
-                 └─▶ plan packet in ~/repos/plans/<date>-<slug>/
 
-2. REVIEW    Coordinator ──packet──▶ Reviewer (Codex, review-plan)
-             Coordinator ◀──REVIEW.md── verdict: SHIP | REVISE | RETHINK
-             Coordinator answers each finding in PLAN.md
-             (a 2nd round if needed; after 2, or on RETHINK, you decide)
-
-3. GATE      Coordinator ──summary──▶ you: aprobar | cambiar | cancelar
-
-4. EXECUTE   Coordinator ──MISSION.md──▶ Executor (Claude, child worktree)
-             Executor ──▶ commit on exec-<slug> + EXECUTION.md
-
-5. CHECK     (optional) Reviewer reads the diff ──▶ REVIEW-diff.md
-
-6. CLOSE     Coordinator reports ──▶ you merge (and /opsx:archive if a change was applied)
-```
+A second review round happens when a blocking finding is still disputed, or
+when the accepted fixes change scope, architecture or the model.
 
 Step by step, from your side:
 
@@ -223,6 +264,13 @@ PROJECT_NAME/
 Where knowledge lives: **requirements** → `openspec/specs/`; **how we work** →
 `agents/AGENTS.md`; **facts & decisions** → `agents/MEMORY.md`; **plans** →
 `~/repos/plans/`, outside the repo. When specs and docs disagree, the spec wins.
+
+```mermaid
+flowchart LR
+  CC["Claude Code"] --> L[".claude/skills/plan<br/>.claude/skills/review-plan<br/>(symlinks)"]
+  L --> S[".agents/skills/plan<br/>.agents/skills/review-plan<br/>(the only copy)"]
+  CX["Codex · OpenCode"] --> S
+```
 
 **Skills layout.** `plan` and `review-plan` live once, in `.agents/skills/`,
 which Codex and OpenCode read; `.claude/skills/` has symlinks to them so Claude

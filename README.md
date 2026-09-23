@@ -39,15 +39,23 @@ a task list. Read it and ask for changes. When it looks right:
 /opsx:archive    ← merges the specs, files the change
 ```
 
-That's the whole loop: **propose → review → apply → archive.**
+That's the whole loop:
+
+```mermaid
+flowchart LR
+  P["/opsx:propose<br/>proposal · specs · design · tasks"] --> R{"You review<br/>the intent"}
+  R -- "ask for changes" --> P
+  R -- "looks right" --> A["/opsx:apply<br/>implements the tasks"]
+  A --> AR["/opsx:archive<br/>specs become the new truth"]
+```
 
 ---
 
 ## Try the orchestrated mode
 
-For bigger or riskier work. **You also need:** [Orca](https://www.onorca.dev/) with orchestration on
-(Settings → Experimental) and the [Codex CLI](https://github.com/openai/codex)
-logged in.
+For bigger or riskier work. **You also need:** [Orca](https://www.onorca.dev/)
+with orchestration on (Settings → Experimental) and the
+[Codex CLI](https://github.com/openai/codex) logged in.
 
 ```bash
 mkdir -p ~/repos/plans      # where plans live, outside the repo
@@ -57,13 +65,31 @@ Open the repo in Orca, start `claude` in the main tab, and say:
 
 > Read `ORCHESTRATOR.md` and act as the coordinator for this: *&lt;your ask&gt;*
 
-What happens next:
+What happens next — you only answer, approve and merge:
 
-1. **It asks you questions** until the plan has no open decisions.
-2. **Codex reviews the plan** and the coordinator answers each objection.
-3. **You approve** (`aprobar` / `cambiar` / `cancelar`).
-4. **Another Claude executes it** on branch `exec-<slug>` and commits there.
-5. **You read the result and merge.**
+```mermaid
+sequenceDiagram
+  actor You
+  participant C as Coordinator (Claude)
+  participant R as Reviewer (Codex)
+  participant E as Executor (Claude)
+  You->>C: your ask
+  loop until no decision is left open
+    C->>You: questions
+    You->>C: answers
+  end
+  Note over C: writes the plan
+  C->>R: attack this plan
+  R-->>C: REVIEW.md (SHIP / REVISE / RETHINK)
+  Note over C: answers every objection
+  C->>You: summary, risks, model
+  You->>C: aprobar
+  C->>E: MISSION.md
+  Note over E: builds, tests, commits on exec-slug
+  E-->>C: done + EXECUTION.md
+  C->>You: report
+  Note over You: read the diff and merge
+```
 
 If a run gets stuck on a permission prompt the first time, see
 [Orchestration setup](docs/how-it-works.md#orchestration-setup).
