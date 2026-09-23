@@ -16,23 +16,59 @@ git clone https://github.com/piotromashov/template.git my-project && cd my-proje
 claude    # or codex, opencode, or open the folder in Cursor
 ```
 
-Then say what you want. Pick the level that matches the size of the task:
+Then say what you want. Pick the level that matches the task:
 
 | Level | Use it when | You say |
 |---|---|---|
-| [**1. Spec-first**](#level-1-spec-first-the-everyday-loop) | Any feature or change. Your default | *"… Propose it."* |
-| [**2. Plan and review**](#level-2-plan-and-review) | The work is big enough that you want a second model to check the plan | *"Use the `plan` skill for: …"* |
-| [**3. Orchestration**](#level-3-orchestration) | You want to hand the whole thing to a team of agents and only approve and merge | *"Read `agents/ORCHESTRATOR.md` and act as the coordinator for: …"* |
+| [**1. Just ask**](#level-1-just-ask) | Questions, docs, tooling, chores: anything that doesn't change what the system does | *"Add Prettier and a `format` script."* |
+| [**2. Spec-first**](#level-2-spec-first) | A feature, a fix, any change in behaviour | *"… Propose it."* |
+| [**3. Orchestration**](#level-3-orchestration) | Big or risky work you want to hand to a team of agents, and only approve and merge | *"Read `agents/ORCHESTRATOR.md` and act as the coordinator for: …"* |
 
-Each level builds on the one before: a plan can wrap a spec-first change, and
-an orchestrated run is a plan with the agents doing the legwork.
+The agent picks up the rules at every level: at level 1 it will tell you when
+something needs a spec, and at level 3 the team still goes through level 2
+for behaviour changes.
 
 ---
 
-## Level 1: Spec-first, the everyday loop
+## Level 1: Just ask
+
+**Use it when** you have a question, or work that doesn't change what the
+system does: documentation, tooling, scripts, configuration, small operations.
+Works in Claude Code, Codex, OpenCode and Cursor, with nothing else installed.
+
+**Examples**
+
+> Add Prettier and a `format` script.
+
+> What formatter do we use, and why?
+
+> Explain how the CLI is structured.
+
+**Workflow.** Before doing anything, the agent reads the rules in
+`agents/AGENTS.md` and the decision log in `agents/MEMORY.md`, so it works the
+way this repo works and doesn't redo what was already decided. When it
+settles something new, it appends a dated entry to `MEMORY.md`. The next
+session, or the next person, starts from there.
+
+```mermaid
+flowchart LR
+  Y["You ask"] --> R["Agent reads<br/>AGENTS.md + MEMORY.md"]
+  R --> W["Does the work"]
+  W --> M["Appends what it decided<br/>to MEMORY.md"]
+  M --> N["Next session<br/>starts from there"]
+```
+
+If the ask turns out to change behaviour, the agent says so and proposes it
+instead (level 2). That's the rule, not a judgment call.
+
+Walkthrough: [Everyday work, with memory](docs/examples.md#1-everyday-work-with-memory).
+
+---
+
+## Level 2: Spec-first
 
 **Use it when** you want a new behaviour, a fix, or a change and you're
-driving. Works in Claude Code, Codex, OpenCode and Cursor.
+driving. This is the default for anything the system *does*.
 
 **Examples**
 
@@ -56,46 +92,17 @@ flowchart LR
   A --> AR["Archive<br/>the specs are updated"]
 ```
 
-Walkthrough: [Add a feature, spec-first](docs/examples.md#1-add-a-feature-spec-first).
-
----
-
-## Level 2: Plan and review
-
-**Use it when** the work crosses several parts of the system, touches
-something deployed, or is ambiguous enough that a wrong reading costs real
-time, and you want a *different* model to attack the plan before anyone
-executes it. Needs Claude Code and the Codex CLI; no Orca.
-
-**Examples**
-
-> Use the `plan` skill for: migrate the CLI from CommonJS to ES modules.
-
-> Use the `review-plan` skill on `~/repos/plans/2026-09-23-esm-migration/`.
-
-**Workflow.** Claude grills you until no decision is left open and writes a
-plan packet outside the repo: the evidence, the steps, and a `MISSION.md`
-that a fresh session can execute without asking anything. Codex reads it cold
-and writes `REVIEW.md` with a verdict. Claude answers each finding. Then you
-paste `MISSION.md` into a new session, and it does the work.
-
-```mermaid
-flowchart LR
-  A["plan · Claude<br/>asks, then writes<br/>ANALYSIS · PLAN · MISSION"] --> R["review-plan · Codex<br/>attacks it, writes REVIEW.md<br/>SHIP · REVISE · RETHINK"]
-  R --> C["Claude answers<br/>each finding in PLAN.md"]
-  C --> E["A fresh session<br/>executes MISSION.md"]
-```
-
-Walkthrough: [Plan and review without Orca](docs/examples.md#2-plan-and-review-without-orca).
+Walkthrough: [Add a feature, spec-first](docs/examples.md#2-add-a-feature-spec-first).
 
 ---
 
 ## Level 3: Orchestration
 
-**Use it when** you want level 2 to run by itself: a coordinator plans with
-you, dispatches the reviewer and the executor, and stops only for your
-approval. Needs [Orca](https://www.onorca.dev/) with orchestration on, Claude
-Code and the Codex CLI.
+**Use it when** the work is big, crosses several parts of the system, or is
+risky enough that you want a *different* model to attack the plan before
+anyone executes it, and you'd rather approve than drive. Needs
+[Orca](https://www.onorca.dev/) with orchestration on, Claude Code and the
+Codex CLI.
 
 **Examples**
 
@@ -105,9 +112,11 @@ Code and the Codex CLI.
 > Read `agents/ORCHESTRATOR.md` and act as the coordinator for: let users pick
 > the greeting language with `--lang es|en`.
 
-**Workflow.** You answer questions, approve at the gate, and merge. Everything
-else is done by the three agents, and the executor works on its own branch so
-nothing lands on `main` without you.
+**Workflow.** A coordinator grills you until no decision is left open and
+writes a plan (`plan` skill). Codex reads it cold and attacks it
+(`review-plan` skill); the coordinator answers every finding. You approve at
+a gate. An executor builds it on its own branch, so nothing lands on `main`
+without you. You answer questions, approve, and merge.
 
 ```mermaid
 sequenceDiagram
@@ -131,11 +140,16 @@ sequenceDiagram
 ```
 
 When the work changes what the system does, the run still goes through level
-1: the mission either applies a spec-first change already on `main` or
+2: the mission either applies a spec-first change already on `main` or
 proposes one first.
 
-Walkthroughs: [Hand off a chore to three agents](docs/examples.md#3-hand-off-a-chore-to-three-agents)
-and [Orchestrate a feature](docs/examples.md#4-orchestrate-a-feature).
+**Without Orca**, the two skills work on their own: *"Use the `plan` skill
+for: …"* in Claude Code, *"Use the `review-plan` skill on `~/repos/plans/…`"*
+in Codex, then paste `MISSION.md` into a fresh session.
+
+Walkthroughs: [Plan and review without Orca](docs/examples.md#3-plan-and-review-without-orca),
+[Hand off a chore to three agents](docs/examples.md#4-hand-off-a-chore-to-three-agents)
+and [Orchestrate a feature](docs/examples.md#5-orchestrate-a-feature).
 
 ---
 

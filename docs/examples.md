@@ -1,22 +1,71 @@
 # Examples
 
-Four walkthroughs, in the same order as the README levels: spec-first, plan and
-review, then orchestration. Each shows **what
+Five walkthroughs, in the same order as the README levels: just ask, spec-first,
+then orchestration (with and without Orca). Each shows **what
 you say**, **what the agent does**, and **what you check**. Agent replies and
 file contents are illustrative: yours will differ in wording, not in shape.
 
 | Example | Flow | Use it when |
 |---|---|---|
-| [1. Add a feature, spec-first](#1-add-a-feature-spec-first) | OpenSpec, one agent | You want a new behaviour and you're driving |
-| [2. Plan and review without Orca](#2-plan-and-review-without-orca) | `plan` + `review-plan` by hand | You want a second model's opinion on the plan, without the pipeline |
-| [3. Hand off a chore to three agents](#3-hand-off-a-chore-to-three-agents) | Orchestration | The work is bigger or riskier than you want to babysit, and doesn't change behaviour |
-| [4. Orchestrate a feature](#4-orchestrate-a-feature) | Orchestration + OpenSpec | A behaviour change that deserves a reviewed plan |
+| [1. Everyday work, with memory](#1-everyday-work-with-memory) | Rules + memory, one agent | Questions, docs, tooling: nothing that changes behaviour |
+| [2. Add a feature, spec-first](#2-add-a-feature-spec-first) | OpenSpec, one agent | You want a new behaviour and you're driving |
+| [3. Plan and review without Orca](#3-plan-and-review-without-orca) | `plan` + `review-plan` by hand | You want a second model's opinion on the plan, without the pipeline |
+| [4. Hand off a chore to three agents](#4-hand-off-a-chore-to-three-agents) | Orchestration | The work is bigger or riskier than you want to babysit, and doesn't change behaviour |
+| [5. Orchestrate a feature](#5-orchestrate-a-feature) | Orchestration + OpenSpec | A behaviour change that deserves a reviewed plan |
 
-The running project in all four is a small greeting CLI, built from zero.
+The running project in all of them is a small greeting CLI, built from zero.
 
 ---
 
-## 1. Add a feature, spec-first
+## 1. Everyday work, with memory
+
+**Tool:** any agent opened in the repo. Nothing to install beyond the agent.
+
+This is for work that doesn't change what the system does. No OpenSpec change
+is involved; what makes it different from a plain chat is that the agent reads
+the repo's rules and memory first, and writes back what it decided.
+
+### You say
+
+> Add Prettier and a `format` script.
+
+### The agent reads before acting
+
+It opens `agents/AGENTS.md` (the rules) and `agents/MEMORY.md` (the decision
+log). The log has no formatter decision yet, so it asks the one thing it can't
+infer:
+
+> Default Prettier config, or do you have preferences (tabs, quotes, width)?
+
+### It does the work, and remembers it
+
+It adds the dependency and the script, runs it once, and appends to
+`agents/MEMORY.md`:
+
+```markdown
+- **2026-09-23 — Prettier with the default config.** `npm run format`
+  formats everything; run it before committing. Chosen over ESLint's
+  formatter to keep one tool per job.
+```
+
+### Next time
+
+A week later, in a fresh session, anyone can ask:
+
+> What formatter do we use, and why?
+
+and get the answer from the log, without you in the loop.
+
+### When it isn't level 1
+
+If you had said *"make the CLI also print the date"*, the agent would answer
+that this changes behaviour and needs a change first: *"I'll propose it, then
+you review."* That's the rule in `agents/AGENTS.md`, and it applies at every
+level.
+
+---
+
+## 2. Add a feature, spec-first
 
 **Tool:** Claude Code (or Codex, OpenCode, Cursor) opened in the repo.
 
@@ -98,7 +147,7 @@ it.
 
 ---
 
-## 2. Plan and review without Orca
+## 3. Plan and review without Orca
 
 The two skills work in any session, so you get the second opinion without the
 pipeline.
@@ -124,7 +173,7 @@ pipeline.
 
 ---
 
-## 3. Hand off a chore to three agents
+## 4. Hand off a chore to three agents
 
 **Tool:** [Orca](https://www.onorca.dev/), with Claude in the main tab and
 Codex available. First time? Do the
@@ -214,9 +263,9 @@ never pushes or merges.
 
 ---
 
-## 4. Orchestrate a feature
+## 5. Orchestrate a feature
 
-Same pipeline as example 3, but the ask changes behaviour, so OpenSpec is part
+Same pipeline as example 4, but the ask changes behaviour, so OpenSpec is part
 of it:
 
 > Read `agents/ORCHESTRATOR.md` and act as the coordinator for: let users pick
@@ -226,7 +275,7 @@ The coordinator checks `openspec/changes/` and `main` first:
 
 - **No change exists yet.** The first mission is to *propose* it. The executor
   writes `openspec/changes/add-lang-flag/` on its branch; you review the intent
-  exactly as in example 1 and merge it. Then the coordinator runs a second
+  exactly as in example 2 and merge it. Then the coordinator runs a second
   mission that *applies* it.
 - **The change is already on `main`.** The mission is simply to apply
   `add-lang-flag`, and the executor follows `tasks.md`.
@@ -239,6 +288,7 @@ add-lang-flag"* from `main`, and the new scenarios become part of
 
 ## Good first asks
 
+- *"What did we decide about …?"* answers from `agents/MEMORY.md`.
 - *"Propose a feature that …"* runs the OpenSpec loop.
 - *"Explore how we could …"* thinks it through before anything is proposed.
 - *"What changes are in flight?"* lists open changes.

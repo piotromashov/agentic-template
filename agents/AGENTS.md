@@ -138,6 +138,8 @@ gates in brief:
 1. **No implementation without an approved change.** If asked to build
    something with no change folder, create the proposal first
    (`/opsx:propose`) and get it reviewed. Don't jump to code.
+   Work that doesn't change what the system does (questions, docs, tooling,
+   scripts, ops) needs no change; do it, and record any decision in `MEMORY.md`.
 2. **Never edit live specs directly.** Requirements in
    `openspec/specs/<capability>/spec.md` change only via deltas in a change
    folder, then `/opsx:archive`. Editing them by hand breaks the audit trail.
