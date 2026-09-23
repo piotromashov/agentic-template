@@ -1,71 +1,148 @@
 # Agentic project template
 
-A project template where AI agents **agree on what to build before building
-it**, and where one model's plan is checked by another before anything runs.
-Works with Claude Code, Codex, OpenCode and Cursor.
+A project template that tells AI coding agents **how to work** in it: agree on
+what to build before building it, keep a record of what was decided, and have
+one model's plan checked by another before anything runs.
 
-You get two ways to work:
-
-- **Spec-first, with one agent.** Every change starts as a short proposal
-  (intent, specs, design, tasks) that you review before any code is written.
-  Powered by [OpenSpec](https://openspec.dev).
-- **Orchestrated, with three agents.** Claude plans with you, Codex attacks the
-  plan, you approve, and another Claude executes it in its own branch. You only
-  answer questions, approve, and merge.
+You don't learn commands to use it. You open the repo with your agent (Claude
+Code, Codex, OpenCode or Cursor) and say what you want. The files below are
+what the agent reads to know what to do.
 
 ---
 
-## Quick start (5 minutes)
+## How it fits together
 
-**You need:** Node.js ≥ 20.19 and Claude Code (or Cursor).
-
-```bash
-npm install -g @fission-ai/openspec@latest   # once
-git clone https://github.com/piotromashov/template.git my-project && cd my-project
-claude
+```mermaid
+flowchart TD
+  subgraph H["Your agent"]
+    CC["Claude Code"]
+    CX["Codex · OpenCode"]
+  end
+  CC --> CM["CLAUDE.md"]
+  CX --> AM["AGENTS.md"]
+  subgraph AG["agents/ — the operating manual"]
+    R["AGENTS.md<br/>the rules"]
+    M["MEMORY.md<br/>what was decided, and why"]
+    O["ORCHESTRATOR.md<br/>playbook for multi-agent runs"]
+  end
+  CM -- "points to" --> R
+  AM -- "points to" --> R
+  R -. "read before work" .-> M
+  subgraph SK["Skills — how to do each kind of job"]
+    OS["OpenSpec<br/>propose · apply · archive"]
+    AU["Authoring<br/>one skill per artifact"]
+    PL["plan · review-plan"]
+  end
+  R -- "spec-first work" --> OS
+  OS --> AU
+  O -- "multi-agent runs" --> PL
+  K[("openspec/specs + changes<br/>adr/")]
+  AU -- "writes" --> K
 ```
 
-Then, inside Claude Code:
+Every agent starts at a **pointer file**, reads the **operating manual** in
+`agents/`, and uses **skills** for the actual work. What gets built is recorded
+as **specs**; big decisions are recorded as **ADRs**.
 
-```
-/opsx:propose "a CLI that greets the user by name"
-```
+---
 
-You'll get a folder in `openspec/changes/` with a proposal, specs, a design and
-a task list. Read it and ask for changes. When it looks right:
+## The pieces
 
-```
-/opsx:apply      ← implements the tasks
-/opsx:archive    ← merges the specs, files the change
-```
+### Entry points: `CLAUDE.md` and `AGENTS.md`
 
-That's the whole loop:
+Two identical, tiny files at the root. Each harness looks for its own name
+(Claude Code reads `CLAUDE.md`; Codex and OpenCode read `AGENTS.md`), and both
+say the same thing: *the rules are in `agents/`, read them before doing
+anything.* They hold no rules themselves, so there is one manual, not three.
+
+### `agents/AGENTS.md` — the rules
+
+How work happens here, for every agent:
+
+- **Spec-first.** Nothing is implemented without an approved OpenSpec change.
+  If you ask for a feature, the agent proposes it first and waits for your
+  review.
+- **Git gates.** A proposal reaches `main` before it is applied; a change is
+  archived only from `main`, after the code is merged. Agents never commit,
+  push or merge without your OK, and never add co-author lines.
+- **Safety.** No secrets in the repo, no editing live specs by hand, no
+  force-push to `main`, and honest reporting when something wasn't verified.
+
+### `agents/MEMORY.md` — the decision log
+
+The facts and decisions that aren't requirements: why the repo is set up this
+way, infrastructure facts, gotchas found along the way. Dated, newest first,
+append-only. Agents read it before working and add to it after meaningful
+changes, so the next session (or the next person) doesn't have to rediscover
+them.
+
+Each kind of knowledge has one home:
+
+| Knowledge | Lives in | Example |
+|---|---|---|
+| What the system does | `openspec/specs/` | "The CLI greets the user by name" |
+| How we work | `agents/AGENTS.md` | "No code without an approved change" |
+| Facts and decisions | `agents/MEMORY.md` | "2026-09-23: commit attribution is off" |
+| Architecture decisions | `adr/` | "0001: use SQLite for the local store" |
+| Plans for a piece of work | `~/repos/plans/`, outside the repo | `PLAN.md`, `MISSION.md` |
+
+### Skills — how each job is done
+
+A skill is a set of instructions an agent loads when a task matches it. The
+rules say *what* must happen; skills say *how*.
+
+| Family | Skills | What they do |
+|---|---|---|
+| **OpenSpec workflow** | `openspec-propose`, `-apply-change`, `-archive-change`, `-explore`, `-verify-change`, … and the `/opsx:*` commands | Run the spec-first loop: write a change, implement it, fold it into the specs |
+| **Authoring** | `grill-me`, `gherkin-authoring`, `c4-diagrams`, `architectural-decision-records` | Each writes one artifact of a change: it questions you on the proposal, writes specs as scenarios, draws the design, records ADRs |
+| **Quality** | `openspec-git-discipline`, `adversarial-authoring` | Enforce the git gates; have one subagent draft and another attack the draft |
+| **Planning** | `plan`, `review-plan` | Turn an ask into a plan another model can execute alone, then red-team it with a different model |
+
+Where they live:
 
 ```mermaid
 flowchart LR
-  P["/opsx:propose<br/>proposal · specs · design · tasks"] --> R{"You review<br/>the intent"}
-  R -- "ask for changes" --> P
-  R -- "looks right" --> A["/opsx:apply<br/>implements the tasks"]
-  A --> AR["/opsx:archive<br/>specs become the new truth"]
+  CC["Claude Code"] --> CL[".claude/skills/<br/>all skills"]
+  CL -- "plan, review-plan<br/>are symlinks" --> AS[".agents/skills/<br/>plan · review-plan"]
+  CX["Codex · OpenCode"] --> AS
+  CU["Cursor"] --> CR[".cursor/skills/<br/>core OpenSpec skills"]
 ```
+
+`plan` and `review-plan` are the skills every harness needs, so they live once
+in `.agents/skills/` and Claude Code reaches them through symlinks. Everything
+else is Claude Code–first; Cursor gets the core OpenSpec loop.
+
+### `agents/ORCHESTRATOR.md` — multi-agent runs
+
+The playbook for one agent to coordinate others in [Orca](https://www.onorca.dev/).
+Only the coordinator reads it. It turns the `plan` and `review-plan` skills
+into a pipeline with a human gate in the middle.
 
 ---
 
-## Try the orchestrated mode
+## How work flows
 
-For bigger or riskier work. **You also need:** [Orca](https://www.onorca.dev/)
-with orchestration on (Settings → Experimental) and the
-[Codex CLI](https://github.com/openai/codex) logged in.
+### Spec-first, with one agent
 
-```bash
-mkdir -p ~/repos/plans      # where plans live, outside the repo
+Ask for a feature. The agent proposes a change, you review the intent, it
+implements, and the specs are updated:
+
+```mermaid
+flowchart LR
+  P["Propose<br/>proposal · specs · design · tasks"] --> R{"You review<br/>the intent"}
+  R -- "ask for changes" --> P
+  R -- "looks right" --> A["Apply<br/>implements the tasks"]
+  A --> AR["Archive<br/>specs become the new truth"]
 ```
 
-Open the repo in Orca, start `claude` in the main tab, and say:
+You review **intent**, a short spec delta, instead of reverse-engineering it
+from a diff.
 
-> Read `agents/ORCHESTRATOR.md` and act as the coordinator for this: *&lt;your ask&gt;*
+### Orchestrated, with three agents
 
-What happens next — you only answer, approve and merge:
+For bigger or riskier work, a coordinator plans with you, a *different* model
+attacks the plan, and a third agent executes it on its own branch. You answer
+questions, approve, and merge:
 
 ```mermaid
 sequenceDiagram
@@ -91,36 +168,27 @@ sequenceDiagram
   Note over You: read the diff and merge
 ```
 
-If a run gets stuck on a permission prompt the first time, see
-[Orchestration setup](docs/how-it-works.md#orchestration-setup).
+To start one, open the repo in Orca and tell Claude: *"Read
+`agents/ORCHESTRATOR.md` and act as the coordinator for: …"*.
 
-**No Orca?** The pieces work on their own: ask Claude to *"use the `plan`
-skill for: …"*, ask Codex to *"use the `review-plan` skill on
-`~/repos/plans/<date>-<slug>/`"*, then paste `MISSION.md` into a fresh session.
+When the work changes what the system does, the orchestrated run still goes
+through OpenSpec: the mission either applies a change already on `main` or
+proposes one first.
 
 ---
 
 ## Learn more
 
-| If you want to… | Read |
+| If you want… | Read |
 |---|---|
-| Understand every framework in the template, the orchestration roles and flow, and the plan files | [`docs/how-it-works.md`](docs/how-it-works.md) |
-| Know the rules agents follow here (workflow, git gates, safety) | [`agents/AGENTS.md`](agents/AGENTS.md) |
-| See the coordinator's own playbook (Spanish) | [`agents/ORCHESTRATOR.md`](agents/ORCHESTRATOR.md) |
-| See why things are the way they are | [`agents/MEMORY.md`](agents/MEMORY.md) |
+| Setup, the full orchestration flow, the plan files and the project structure | [`docs/how-it-works.md`](docs/how-it-works.md) |
+| The exact rules agents follow | [`agents/AGENTS.md`](agents/AGENTS.md) |
+| The coordinator's playbook (Spanish) | [`agents/ORCHESTRATOR.md`](agents/ORCHESTRATOR.md) |
+| Why things are the way they are | [`agents/MEMORY.md`](agents/MEMORY.md) |
 
----
-
-## Use it for your own project
-
-1. Replace **`PROJECT_NAME`** in `CLAUDE.md`, `AGENTS.md`, `agents/AGENTS.md`,
-   `agents/MEMORY.md` and `adr/README.md`, and rewrite this README.
-2. Fill in the `TODO`s (description, stack, build/run/test, license).
-3. Trim `.gitignore` to your stack.
-4. `/opsx:propose "your first feature"`.
-
-On Windows, clone with `git config --global core.symlinks true` so the shared
-skills resolve ([why](docs/how-it-works.md#project-structure)).
+**Using it for your own project:** clone it, replace `PROJECT_NAME` and the
+`TODO`s, and ask your agent for the first feature. Details in
+[`docs/how-it-works.md`](docs/how-it-works.md#setup).
 
 ---
 

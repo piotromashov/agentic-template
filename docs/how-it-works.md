@@ -4,12 +4,42 @@ The detail behind the [README](../README.md): every framework in the template,
 how the OpenSpec loop and orchestration fit together, and what happens inside
 an orchestrated run.
 
+- [Setup](#setup)
 - [What's inside](#whats-inside)
 - [The OpenSpec loop](#the-openspec-loop)
 - [How OpenSpec and orchestration fit](#how-openspec-and-orchestration-fit)
 - [Orchestration in detail](#orchestration-in-detail)
 - [Orchestration setup](#orchestration-setup)
 - [Project structure](#project-structure)
+
+---
+
+## Setup
+
+**For the spec-first loop:** Node.js ≥ 20.19, one AI coding tool, and the
+OpenSpec CLI.
+
+```bash
+npm install -g @fission-ai/openspec@latest
+git clone https://github.com/piotromashov/template.git my-project && cd my-project
+```
+
+Open it with your agent and ask for a feature; the agent proposes a change
+first. With Claude Code or Cursor you can also drive it by hand:
+`/opsx:propose "<idea>"`, then `/opsx:apply`, then `/opsx:archive`.
+
+**For your own project:**
+
+1. Replace `PROJECT_NAME` in `CLAUDE.md`, `AGENTS.md`, `agents/AGENTS.md`,
+   `agents/MEMORY.md` and `adr/README.md`, and rewrite the README.
+2. Fill in the `TODO`s (description, stack, build/run/test, license).
+3. Trim `.gitignore` to your stack.
+
+**On Windows**, enable symlinks before cloning
+(`git config --global core.symlinks true`, with Developer Mode on) so the
+shared skills resolve.
+
+**For orchestrated runs**, see [Orchestration setup](#orchestration-setup).
 
 ---
 
