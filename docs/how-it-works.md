@@ -22,7 +22,7 @@ OpenSpec CLI.
 
 ```bash
 npm install -g @fission-ai/openspec@latest
-git clone https://github.com/piotromashov/template.git my-project && cd my-project
+git clone https://github.com/piotromashov/agentic-template.git my-project && cd my-project
 ```
 
 Open it with your agent and ask for a feature; the agent proposes a change
