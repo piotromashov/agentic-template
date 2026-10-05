@@ -12,7 +12,7 @@ team of agents that check each other's work.
 
 ```bash
 npm install -g @fission-ai/openspec@latest                                  # once
-git clone https://github.com/piotromashov/template.git my-project && cd my-project
+git clone https://github.com/piotromashov/agentic-template.git my-project && cd my-project
 claude    # or codex, opencode, or open the folder in Cursor
 ```
 
