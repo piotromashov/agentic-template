@@ -1,0 +1,17 @@
+name: AI provenance
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited]
+
+jobs:
+  label:
+    # Fork PRs have a read-only token. Their labels need manual review.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    uses: ./.github/workflows/agent-provenance-reusable.yml

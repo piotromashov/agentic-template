@@ -111,8 +111,16 @@ end-to-end, say so.
 - **Commit specs and code together.** OpenSpec is built on specs being checked
   in alongside the code they describe.
 - Why-focused commit messages. One coherent change per commit.
-- **No co-author trailers.** Never add `Co-Authored-By:` (Claude or anyone
-  else) or "Generated with" lines to commits or PR descriptions.
+- **No AI commit trailers.** Never add `Co-Authored-By:` or "Generated with" to commits.
+- **Declare PR provenance.** When Claude Code or Codex prepares a PR, include a
+  standalone `AI-Authored-With: Claude Code` or `AI-Authored-With: Codex` line in
+  its description. Include both lines if both substantially prepared it. Claude
+  Code supplies its line through `.claude/settings.json`; other harnesses add
+  theirs when creating the PR. Do not add a line for a human-only PR.
+- **Declare review provenance.** When posting a PR review, end its body with
+  `AI-Reviewed-With: Claude Code` or `AI-Reviewed-With: Codex`, as appropriate.
+  The `agent-provenance` workflow turns these declarations into GitHub labels.
+  GitHub still shows the account used to post; the label records the tool.
 - Don't commit secrets. Keep `.gitignore` current.
 
 ### Git discipline (the gates)

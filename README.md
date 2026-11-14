@@ -166,6 +166,27 @@ and [Orchestrate a feature](docs/examples.md#5-orchestrate-a-feature).
 
 ---
 
+## AI provenance on pull requests
+
+Claude Code and Codex use the repository owner's GitHub account when they run
+`gh`, so GitHub's author field alone does not identify the coding tool. Agent
+PRs declare `AI-Authored-With: Claude Code` or `AI-Authored-With: Codex` in the
+PR body; agent reviews declare `AI-Reviewed-With: ...` in the review body. The
+[provenance workflow](.github/workflows/agent-provenance.yml) adds the matching
+`authored-with:*` or `reviewed-with:*` label. Consumer repos execute only
+code from the template, not code from the PR being labeled. The declaration is self-reported, not a verified agent identity. Commit
+co-author trailers remain disabled.
+
+The thin workflow in this repo calls its reusable workflow locally. Existing
+projects call `piotromashov/agentic-template/.github/workflows/agent-provenance-reusable.yml@main`. Copy
+that thin workflow, the PR/review rule in `agents/AGENTS.md`, and Claude's
+`.claude/settings.json` attribution setting into an existing project to opt it
+in. Template changes are not copied into existing projects automatically;
+subsequent workflow-logic changes flow through the shared workflow. Fork PRs
+have a read-only Actions token and need manual labeling.
+
+---
+
 ## Go deeper
 
 | If you want… | Read |
