@@ -22,6 +22,13 @@
 
 Newest first. One entry per decision: date, what was decided, why.
 
+- **2026-11-14 — Agent provenance belongs on PRs and reviews, not commits.**
+  Supersedes the 2026-09-23 no-PR-attribution rule below. Claude Code emits
+  `AI-Authored-With: Claude Code` in PR descriptions; Codex follows the same
+  convention through `agents/AGENTS.md`. Reviews declare `AI-Reviewed-With`.
+  A reusable GitHub workflow applies matching labels without executing PR code.
+  Commit attribution remains disabled. Why: agents post through Piotr's GitHub
+  account, so GitHub's actor alone does not distinguish their contributions.
 - **2026-09-23 — Orchestrated mode ships with the template.**
   [`ORCHESTRATOR.md`](ORCHESTRATOR.md) (kept in `agents/` with the other
   agent docs, not at the root) makes a Claude coordinator plan with
